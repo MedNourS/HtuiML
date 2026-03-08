@@ -1,0 +1,6 @@
+[project]
+name = "HtuiML"
+version = "0.0.0"
+description = "A tool to convert your basic HTML and very simple CSS into a TUI app!"
+requires-python = ">=3.11"
+dependencies = []
