@@ -4,5 +4,6 @@ version = "0.0.1"
 description = "A tool to convert your basic HTML and very simple CSS into a TUI app!"
 requires-python = ">=3.11"
 dependencies = [
-    "beautifulsoup4"
+    "beautifulsoup4",
+    "lxml"
 ]
