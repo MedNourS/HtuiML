@@ -1,4 +1,7 @@
+from bs4 import BeautifulSoup
 import re
+
+default_soup_parser: str = "lxml"
 
 def get_html_content(abs_path: str) -> str:
     """
@@ -12,23 +15,49 @@ def get_html_content(abs_path: str) -> str:
     except Exception:
         return ""
 
-def minify_html(html: str) -> str:
+def get_html_info(abs_path: str) -> dict:
     """
-    Returns a string representing the minified version of an HTML file
-    """
-    
-    return html.replace("\n", "").replace(" <", "<").replace("> ", ">").replace("< ", "<").replace(" >", ">").replace("  ", " ").strip()
-
-def remove_unnecessary_html(html: str) -> str:
-    """
-    Returns a string representing only the content of the <body>, removing comments and whatnot
+    Returns a dictionary representing info about an HTML file
     """
     
-    return re.sub("<!--(.*?)-->", "", re.sub("<head>(.*?)</head>", "", re.sub("<script>(.*?)</script>", "", html.split("<body>")[1].split("</body>")[0]))).strip()
+    try:
+        with open(abs_path, 'r', encoding='utf-8') as html_file:
+            html_content: str = html_file.read()
+    except Exception:
+        return {}
+    
+    soup = BeautifulSoup(html_content, default_soup_parser)
+    
+    return {
+        "title": soup.title.get_text(),
+        "language": soup.html["lang"],
+        "css_links": [link_element["href"] for link_element in soup.find_all("link")]
+    }
 
-def structure(html: str) -> str:
+def structure(html: str, minify: bool = False) -> str:
     """
     Returns a string representing the structure of the html's contents, using indents
     """
     
-    return html.replace(">", ">\n  ").replace("</", "\n</")
+    soup = BeautifulSoup(html, default_soup_parser)
+    
+    if minify:
+        return re.sub("\n", "", str(soup))
+    else:
+        return str(soup)
+
+def get_body(html: str) -> str:
+    """
+    Returns a string representing the <body>
+    """
+    
+    soup = BeautifulSoup(html, default_soup_parser)
+
+    return re.sub("<!--(.*?)-->", "", str(soup.find("body"))).replace("\n\n", "\n")
+
+def get_content(html: str, tag: str = "body") -> str:
+    """
+    Returns a string representing the content of the chosen html tag, which is "body" by default, and removes comments
+    """
+    
+    return re.sub("<!--(.*?)-->\n", "", html.split(f"<{tag}>")[1].split(f"</{tag}>")[0].strip())
